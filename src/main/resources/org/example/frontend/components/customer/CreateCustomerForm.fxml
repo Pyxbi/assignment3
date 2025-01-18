@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.frontend.components.customer.CustomerAddController"
+            prefHeight="400.0" prefWidth="600.0">
+    <children>
+        <HBox prefWidth="800.0" prefHeight="600.0" alignment="CENTER">
+            <VBox prefWidth="400.0" prefHeight="600.0" alignment="CENTER" style="-fx-background-color: #ffffff; -fx-padding: 30px;">
+                <padding>
+                    <Insets top="20.0" right="20.0" bottom="20.0" left="20.0" />
+                </padding>
+                <children>
+                    <VBox spacing="10.0" alignment="CENTER_LEFT" prefWidth="260.0" layoutX="20.0" layoutY="20.0">
+                        <children>
+                            <Label text="Create an Account" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #333333;" />
+
+                            <!-- Full Name -->
+                            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                <children>
+                                    <Label text="Full Name:" />
+                                    <TextField fx:id="fullNameField" style="-fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #cccccc;" />
+                                </children>
+                            </HBox>
+
+                            <!-- Phone -->
+                            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                <children>
+                                    <Label text="Phone:" />
+                                    <TextField fx:id="phoneField" style="-fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #cccccc;" />
+                                </children>
+                            </HBox>
+
+                            <!-- Address -->
+                            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                <children>
+                                    <Label text="Address:" />
+                                    <TextField fx:id="addressField" style="-fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #cccccc;" />
+                                </children>
+                            </HBox>
+
+                            <!-- Create Button -->
+                            <Button fx:id="createButton" text="Create" onAction="#handleCreate"/>
+                        </children>
+                    </VBox>
+                </children>
+            </VBox>
+        </HBox>
+    </children>
+</AnchorPane>
