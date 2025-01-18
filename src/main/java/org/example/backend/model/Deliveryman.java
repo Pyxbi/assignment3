@@ -1,73 +1,181 @@
-package org.example.backend.model;
+<?xml version="1.0" encoding="UTF-8"?>
+        <?import javafx.scene.control.*?>
+        <?import javafx.scene.layout.*?>
+<VBox spacing="10" alignment="CENTER" xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.frontend.controller.UserController">
+<Label text="User Management" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
 
-import jakarta.persistence.*;
-import org.hibernate.annotations.BatchSize;
-import java.util.Set;
+<!-- Input Fields -->
+<HBox spacing="10">
+<TextField fx:id="nameField" promptText="Name" />
+<TextField fx:id="contactField" promptText="Contact Information" />
+</HBox>
 
-@Entity
-@Table(name = "deliverymen")
-@BatchSize(size = 10)
-public class Deliveryman {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+<!-- Buttons -->
+<HBox spacing="10">
+<Button text="Add User" onAction="#handleAddUser" />
+<Button text="Update User" onAction="#handleUpdateUser" />
+</HBox>
 
-    private String name;
-    private String phoneNumber;
+<!-- User Search -->
+<HBox spacing="10">
+<TextField fx:id="searchField" promptText="Search by Name" />
+<Button text="Search" onAction="#handleSearchUsers" />
+</HBox>
 
-    @OneToMany(mappedBy = "deliveryman", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Order> orders;
+<!-- Table View -->
+<TableView fx:id="userTable" prefWidth="400">
+<columns>
+<TableColumn fx:id="idColumn" text="ID" prefWidth="50" />
+<TableColumn fx:id="nameColumn" text="Name" prefWidth="150" />
+<TableColumn fx:id="contactColumn" text="Contact Info" prefWidth="200" />
+</columns>
+</TableView>
+</VBox>
 
-    // Constructors, Getters, and Setters
-    public Deliveryman() {
+
+
+        package org.example.frontend.controller;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.scene.control.*;
+import org.example.backend.model.User;
+import org.example.backend.service.UserService;
+
+import java.util.List;
+
+public class UserController {
+
+    // FXML Components
+    @FXML private TextField nameField;
+    @FXML private TextField contactField;
+    @FXML private TextField searchField;
+    @FXML private TableView<User> userTable;
+    @FXML private TableColumn<User, Integer> idColumn;
+    @FXML private TableColumn<User, String> nameColumn;
+    @FXML private TableColumn<User, String> contactColumn;
+
+    // Backend Service
+    private final UserService userService = new UserService();
+
+    // Observable List for TableView
+    private final ObservableList<User> userList = FXCollections.observableArrayList();
+
+    @FXML
+    public void initialize() {
+        // Initialize TableView Columns
+        idColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().getId()));
+        nameColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getName()));
+        contactColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getContactInformation()));
+
+        // Bind the observable list to the TableView
+        userTable.setItems(userList);
+
+        // Load all users at startup
+        loadAllUsers();
     }
 
-    public Deliveryman(Integer id, String name, String phoneNumber, Set<Order> orders) {
-        this.id = id;
-        this.name = name;
-        this.phoneNumber = phoneNumber;
-        this.orders = orders;
+    private void loadAllUsers() {
+        List<User> users = userService.searchUsers(""); // Fetch all users
+        userList.setAll(users);
     }
 
-    public Integer getId() {
-        return id;
+    @FXML
+    public void handleAddUser() {
+        String name = nameField.getText();
+        String contact = contactField.getText();
+
+        if (name.isEmpty() || contact.isEmpty()) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Name and Contact Information cannot be empty!");
+            return;
+        }
+
+        User user = new User();
+        user.setName(name);
+        user.setContactInformation(contact);
+
+        userService.addUser(user);
+        showAlert(Alert.AlertType.INFORMATION, "Success", "User added successfully!");
+
+        // Refresh TableView
+        loadAllUsers();
+
+        // Clear Input Fields
+        nameField.clear();
+        contactField.clear();
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    @FXML
+    public void handleUpdateUser() {
+        User selectedUser = userTable.getSelectionModel().getSelectedItem();
+
+        if (selectedUser == null) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Please select a user to update.");
+            return;
+        }
+
+        String name = nameField.getText();
+        String contact = contactField.getText();
+
+        if (name.isEmpty() || contact.isEmpty()) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Name and Contact Information cannot be empty!");
+            return;
+        }
+
+        selectedUser.setName(name);
+        selectedUser.setContactInformation(contact);
+
+        userService.updateUser(selectedUser);
+        showAlert(Alert.AlertType.INFORMATION, "Success", "User updated successfully!");
+
+        // Refresh TableView
+        loadAllUsers();
+
+        // Clear Input Fields
+        nameField.clear();
+        contactField.clear();
     }
 
-    public String getName() {
-        return name;
+    @FXML
+    public void handleSearchUsers() {
+        String query = searchField.getText();
+
+        List<User> users = userService.searchUsers(query);
+        userList.setAll(users);
+
+        if (users.isEmpty()) {
+            showAlert(Alert.AlertType.INFORMATION, "No Results", "No users found for the given search query.");
+        }
     }
 
-    public void setName(String name) {
-        this.name = name;
+    private void showAlert(Alert.AlertType alertType, String title, String content) {
+        Alert alert = new Alert(alertType);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
+}
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
 
-    public Set<Order> getOrders() {
-        return orders;
-    }
+import javafx.application.Application;
+        import javafx.fxml.FXMLLoader;
+        import javafx.scene.Scene;
+        import javafx.stage.Stage;
 
-    public void setOrders(Set<Order> orders) {
-        this.orders = orders;
-    }
-
+public class UserManagementApp extends Application {
     @Override
-    public String toString() {
-        return "Deliveryman{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", orders=" + orders +
-                '}';
+    public void start(Stage stage) throws Exception {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/user_management.fxml"));
+        Scene scene = new Scene(fxmlLoader.load());
+        stage.setTitle("User Management");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    public static void main(String[] args) {
+        launch();
     }
 }
